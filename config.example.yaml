@@ -1,0 +1,7 @@
+env: "local"
+sandbox:
+  host: "sandbox.smtp.mailtrap.io"
+  port: 2525
+  username: "****"
+  password: "****"
+

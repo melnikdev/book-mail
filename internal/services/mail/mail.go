@@ -1,13 +1,20 @@
-package main
+package mail
 
 import (
-	"fmt"
-
 	gomail "gopkg.in/mail.v2"
+
+	"github.com/melnikdev/book-mail/config"
 )
 
-func main() {
-	// Create a new message
+type Mail struct {
+	Config *config.Config
+}
+
+func New(config *config.Config) *Mail {
+	return &Mail{Config: config}
+}
+
+func (m *Mail) Send() error {
 	message := gomail.NewMessage()
 
 	// Set email headers
@@ -19,13 +26,11 @@ func main() {
 	message.SetBody("text/plain", "This is the Test Body")
 
 	// Set up the SMTP dialer
-	dialer := gomail.NewDialer("sandbox.smtp.mailtrap.io", 587, "***", "***")
+	dialer := gomail.NewDialer(m.Config.Sandbox.Host, m.Config.Sandbox.Port, m.Config.Sandbox.Username, m.Config.Sandbox.Password)
 
-	// Send the email
 	if err := dialer.DialAndSend(message); err != nil {
-		fmt.Println("Error:", err)
-		panic(err)
-	} else {
-		fmt.Println("Email sent successfully!")
+		return err
 	}
+
+	return nil
 }

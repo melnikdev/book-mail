@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Env     string
 	Sandbox *Sandbox
+	Kafka   *Kafka
 }
 
 type Sandbox struct {
@@ -17,6 +18,13 @@ type Sandbox struct {
 	Port     int
 	Username string
 	Password string
+}
+
+type Kafka struct {
+	Broker   string
+	Topic    string
+	GroupID  string `mapstructure:"group-id"`
+	MaxBytes int    `mapstructure:"max-bytes"`
 }
 
 var once sync.Once

@@ -22,7 +22,7 @@ func main() {
 	r := kafka.New(config).GetReader()
 	m := mail.New(config)
 
-	go kafka.Consumer(r, m, cu)
+	go kafka.Consumer(r, cu)
 
 	app := fiber.New()
 
@@ -31,8 +31,16 @@ func main() {
 	})
 
 	go func() {
+		var user mail.User
 		for {
-			users = append(users, <-cu)
+			user = <-cu
+			users = append(users, user)
+			if err := m.Send(&user); err != nil {
+				log.Fatal("Failed mail send:", err)
+				panic(err)
+			} else {
+				fmt.Println("Mail sent to user id: ", user.UserId)
+			}
 		}
 	}()
 

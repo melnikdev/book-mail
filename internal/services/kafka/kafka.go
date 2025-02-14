@@ -30,7 +30,7 @@ func (b *KafkaBroker) GetReader() *kafka.Reader {
 	})
 }
 
-func Consumer(k *kafka.Reader, m *mail.Mail, ch chan mail.User) {
+func Consumer(k *kafka.Reader, ch chan mail.User) {
 	var user mail.User
 
 	sigchan := make(chan os.Signal, 1)
@@ -54,11 +54,6 @@ func Consumer(k *kafka.Reader, m *mail.Mail, ch chan mail.User) {
 				continue
 			}
 			ch <- user
-
-			if err := m.Send(&user); err != nil {
-				log.Fatal("Failed mail send:", err)
-				panic(err)
-			}
 		}
 	}
 }

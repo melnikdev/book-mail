@@ -8,6 +8,10 @@ import (
 	"syscall"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+
 	"github.com/melnikdev/book-mail/config"
 	"github.com/melnikdev/book-mail/internal/services/kafka"
 	"github.com/melnikdev/book-mail/internal/services/mail"
@@ -26,6 +30,10 @@ func main() {
 
 	app := fiber.New()
 
+	app.Use(recover.New())
+	app.Use(logger.New())
+	app.Use(healthcheck.New())
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.JSON(users)
 	})
@@ -38,8 +46,6 @@ func main() {
 			if err := m.Send(&user); err != nil {
 				log.Fatal("Failed mail send:", err)
 				panic(err)
-			} else {
-				fmt.Println("Mail sent to user id: ", user.UserId)
 			}
 		}
 	}()

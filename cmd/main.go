@@ -1,56 +1,60 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/melnikdev/book-mail/config"
 	"github.com/melnikdev/book-mail/internal/services/kafka"
 	"github.com/melnikdev/book-mail/internal/services/mail"
 )
 
 func main() {
-	var user mail.User
 
 	config := config.MustLoad()
+	cu := make(chan mail.User)
+	users := []mail.User{}
 
 	r := kafka.New(config).GetReader()
 	m := mail.New(config)
 
-	sigchan := make(chan os.Signal, 1)
-	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+	go kafka.Consumer(r, m, cu)
 
-	run := true
-	for run {
-		select {
-		case sig := <-sigchan:
-			log.Printf("Caught signal %v: terminating\n", sig)
-			run = false
-		default:
-			msg, err := r.ReadMessage(context.Background())
+	app := fiber.New()
 
-			if err != nil {
-				continue
-			}
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.JSON(users)
+	})
 
-			if err = json.Unmarshal(msg.Value, &user); err != nil {
-				log.Printf("Error unmarshaling JSON: %v\n", err)
-				continue
-			}
-
-			if err := m.Send(&user); err != nil {
-				log.Fatal("Failed mail send:", err)
-				panic(err)
-			}
+	go func() {
+		for {
+			users = append(users, <-cu)
 		}
-	}
+	}()
+
+	go func() {
+		if err := app.Listen(":3000"); err != nil {
+			log.Panic(err)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	_ = <-c // Block until a signal is received
+
+	fmt.Println("Gracefully shutting down...")
+	_ = app.Shutdown()
+
+	fmt.Println("Running cleanup tasks...")
 
 	if err := r.Close(); err != nil {
 		log.Fatal("failed to close reader:", err)
 	}
 
+	fmt.Println("Fiber was successful shutdown.")
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
@@ -39,13 +40,20 @@ func main() {
 	})
 
 	go func() {
-		var user mail.User
 		for {
-			user = <-cu
-			users = append(users, user)
-			if err := m.Send(&user); err != nil {
-				log.Fatal("Failed mail send:", err)
-				panic(err)
+			select {
+			case user, ok := <-cu:
+				if !ok {
+					fmt.Println("ch1 is closed. Exiting loop.")
+					break
+				}
+				fmt.Println("Received from ch1:", user)
+				users = append(users, user)
+				if err := m.Send(&user); err != nil {
+					log.Fatal("Failed mail send:", err)
+				}
+			case <-time.After(1 * time.Second):
+				fmt.Println("Waiting...")
 			}
 		}
 	}()

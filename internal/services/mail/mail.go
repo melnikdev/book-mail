@@ -1,7 +1,10 @@
 package mail
 
 import (
+	"fmt"
+	"log"
 	"strconv"
+	"time"
 
 	gomail "gopkg.in/mail.v2"
 
@@ -20,7 +23,7 @@ func New(config *config.Config) *Mail {
 	return &Mail{Config: config}
 }
 
-func (m *Mail) Send(u *User) error {
+func (m *Mail) sendEmail(u *User) error {
 	message := gomail.NewMessage()
 
 	// Set email headers
@@ -39,4 +42,22 @@ func (m *Mail) Send(u *User) error {
 	}
 
 	return nil
+}
+
+func (m *Mail) ListenEvent(ch chan User) {
+	for {
+		select {
+		case user, ok := <-ch:
+			if !ok {
+				fmt.Println("ch1 is closed. Exiting loop.")
+				break
+			}
+			fmt.Println("Received from ch1:", user)
+			if err := m.sendEmail(&user); err != nil {
+				log.Fatal("Failed mail send:", err)
+			}
+		case <-time.After(1 * time.Second):
+			fmt.Println("Waiting...")
+		}
+	}
 }

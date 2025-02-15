@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
 	"github.com/melnikdev/book-mail/config"
+	"github.com/melnikdev/book-mail/database"
 	"github.com/melnikdev/book-mail/internal/routes"
 	"github.com/melnikdev/book-mail/internal/services/kafka"
 	"github.com/melnikdev/book-mail/internal/services/mail"
@@ -22,18 +24,24 @@ func main() {
 	config := config.MustLoad()
 	cu := make(chan mail.User)
 
+	db, err := database.NewClient(context.Background())
+
+	if err != nil {
+		panic(err)
+	}
+
 	app := fiber.New()
 
 	app.Use(recover.New())
 	app.Use(logger.New())
 	app.Use(healthcheck.New())
 
-	routes.PublicRoutes(app)
+	routes.PublicRoutes(app, db)
 
 	r := kafka.New(config).GetReader()
 	m := mail.New(config)
 
-	go kafka.Consumer(r, cu)
+	go kafka.Consumer(r, db, cu)
 	go m.ListenEvent(cu)
 
 	go func() {

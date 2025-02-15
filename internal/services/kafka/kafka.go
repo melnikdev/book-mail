@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/melnikdev/book-mail/config"
 	"github.com/melnikdev/book-mail/internal/services/mail"
+	"github.com/redis/go-redis/v9"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -30,7 +32,7 @@ func (b *KafkaBroker) GetReader() *kafka.Reader {
 	})
 }
 
-func Consumer(k *kafka.Reader, ch chan mail.User) {
+func Consumer(k *kafka.Reader, db *redis.Client, ch chan mail.User) {
 	var user mail.User
 
 	sigchan := make(chan os.Signal, 1)
@@ -54,6 +56,10 @@ func Consumer(k *kafka.Reader, ch chan mail.User) {
 				continue
 			}
 			ch <- user
+
+			if err := db.LPush(context.Background(), "users:ids", user.UserId).Err(); err != nil {
+				fmt.Printf("failed to set data, error: %s", err.Error())
+			}
 		}
 	}
 }

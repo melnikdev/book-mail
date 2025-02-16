@@ -22,10 +22,8 @@ type fiberServer struct {
 }
 
 func NewFiberServer(conf *config.Config, db *redis.Client) *fiberServer {
-	fiberApp := fiber.New()
-
 	return &fiberServer{
-		app:  fiberApp,
+		app:  fiber.New(),
 		db:   db,
 		conf: conf,
 	}

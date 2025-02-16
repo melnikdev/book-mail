@@ -16,19 +16,19 @@ import (
 )
 
 type kafkaBroker struct {
-	Config *config.Config
+	config *config.Config
 }
 
 func New(config *config.Config) *kafkaBroker {
-	return &kafkaBroker{Config: config}
+	return &kafkaBroker{config: config}
 }
 
 func (b *kafkaBroker) GetReader() *kafka.Reader {
 	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  []string{b.Config.Kafka.Broker},
-		GroupID:  b.Config.Kafka.GroupID,
-		Topic:    b.Config.Kafka.Topic,
-		MaxBytes: b.Config.Kafka.MaxBytes, // 10MB
+		Brokers:  []string{b.config.Kafka.Broker},
+		GroupID:  b.config.Kafka.GroupID,
+		Topic:    b.config.Kafka.Topic,
+		MaxBytes: b.config.Kafka.MaxBytes, // 10MB
 	})
 }
 

@@ -12,7 +12,7 @@ import (
 )
 
 type mail struct {
-	Config *config.Config
+	config *config.Config
 }
 
 type User struct {
@@ -20,7 +20,7 @@ type User struct {
 }
 
 func New(config *config.Config) *mail {
-	return &mail{Config: config}
+	return &mail{config: config}
 }
 
 func (m *mail) sendEmail(u *User) error {
@@ -35,7 +35,7 @@ func (m *mail) sendEmail(u *User) error {
 	message.SetBody("text/plain", "This is the Test Body id: "+strconv.Itoa(u.UserId))
 
 	// Set up the SMTP dialer
-	dialer := gomail.NewDialer(m.Config.Sandbox.Host, m.Config.Sandbox.Port, m.Config.Sandbox.Username, m.Config.Sandbox.Password)
+	dialer := gomail.NewDialer(m.config.Sandbox.Host, m.config.Sandbox.Port, m.config.Sandbox.Username, m.config.Sandbox.Password)
 
 	if err := dialer.DialAndSend(message); err != nil {
 		return err

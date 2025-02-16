@@ -11,7 +11,7 @@ import (
 	"github.com/melnikdev/book-mail/config"
 )
 
-type Mail struct {
+type mail struct {
 	Config *config.Config
 }
 
@@ -19,11 +19,11 @@ type User struct {
 	UserId int `json:"user_id"`
 }
 
-func New(config *config.Config) *Mail {
-	return &Mail{Config: config}
+func New(config *config.Config) *mail {
+	return &mail{Config: config}
 }
 
-func (m *Mail) sendEmail(u *User) error {
+func (m *mail) sendEmail(u *User) error {
 	message := gomail.NewMessage()
 
 	// Set email headers
@@ -44,7 +44,7 @@ func (m *Mail) sendEmail(u *User) error {
 	return nil
 }
 
-func (m *Mail) ListenEvent(ch chan User) {
+func (m *mail) ListenEvent(ch chan User) {
 	for {
 		select {
 		case user, ok := <-ch:

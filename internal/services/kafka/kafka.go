@@ -15,15 +15,15 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type KafkaBroker struct {
+type kafkaBroker struct {
 	Config *config.Config
 }
 
-func New(config *config.Config) *KafkaBroker {
-	return &KafkaBroker{Config: config}
+func New(config *config.Config) *kafkaBroker {
+	return &kafkaBroker{Config: config}
 }
 
-func (b *KafkaBroker) GetReader() *kafka.Reader {
+func (b *kafkaBroker) GetReader() *kafka.Reader {
 	return kafka.NewReader(kafka.ReaderConfig{
 		Brokers:  []string{b.Config.Kafka.Broker},
 		GroupID:  b.Config.Kafka.GroupID,

@@ -11,6 +11,11 @@ type Config struct {
 	Env     string
 	Sandbox *Sandbox
 	Kafka   *Kafka
+	Server  *Server
+}
+
+type Server struct {
+	Port int
 }
 
 type Sandbox struct {

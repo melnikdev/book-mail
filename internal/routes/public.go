@@ -6,13 +6,9 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func PublicRoutes(a *fiber.App, db *redis.Client) {
+func PublicRoutes(r fiber.Router, db *redis.Client) {
 	handler := handlers.NewHandler(db)
 
-	// Create route group.
-	route := a.Group("/api/v1")
-
-	route.Get("/", handler.HelloWorld)
-
-	route.Get("/users", handler.ListUsers)
+	r.Get("/", handler.HelloWorld)
+	r.Get("/users", handler.ListUsers)
 }
